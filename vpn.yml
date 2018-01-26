@@ -1,0 +1,7 @@
+---
+  - hosts: vpn_appliance
+    remote_user: centos
+    sudo: True
+    gather_facts: yes
+    roles:
+      - vpn

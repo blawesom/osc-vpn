@@ -1,0 +1,62 @@
+
+# first step: convert XML to VARS
+
+- name: Install EPEL Repo
+  yum: name=epel-release state=present
+
+- name: Install network tools
+  yum: name={{ item }} state=latest
+  with_items:
+      - ipsec-tools
+      - iproute
+      - quagga
+
+- name: Set local ip as fact
+  set_fact: cgw_private_ip={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+
+- name: Templating racoon.conf
+  template: src=racoon.conf.j2 dest=/etc/racoon/racoon.conf owner=root
+
+- name: Setup zebra service
+  shell: echo interface eth0 >> /etc/quagga/zebra.conf
+
+- name: Templating psk.txt
+  template: src=psk.txt.j2 dest=/etc/racoon/psk.txt owner=root
+
+- name: Set psk.txt attribue
+  file:
+    path: /etc/racoon/psk.txt
+    mode: 0600
+
+- name: setup ip rules
+  shell: ip xfrm policy add src 0.0.0.0/0 dst 0.0.0.0/0 dir out mark 12 tmpl src {{ vgw_public_ip }} dst {{ cgw_private_ip }} proto esp mode tunnel
+
+- shell: ip link add name tun0 type vti local {{ cgw_private_ip }} remote {{ vgw_public_ip }} key 12
+- shell: ip link set dev tun0 up
+- shell: ip link set dev tun0 mtu 1436
+- shell: ip a a {{ inside_tunnel_cgw_ip }}/30 dev tun0
+- shell: ifconfig tun0 pointopoint {{ inside_tunnel_vgw_ip }}
+- shell: chmod -x /usr/lib/systemd/system/racoon.service
+
+- name: Templating bgpd.conf
+  template: src=bgpd.conf.j2 dest=/etc/quagga/bgpd.conf owner=root
+
+- name: Setup zebra service
+  shell: echo line vty >> /etc/quagga/zebra.conf
+
+- shell: echo "interface eth0" >> /etc/quagga/zebra.conf
+
+- name: Start Racoon and enable at boot
+  service: name=racoon
+           enabled=yes
+           state=started
+
+- name: Start Zebra and enable at boot
+  service: name=zebra
+           enabled=yes
+           state=started
+
+- name: Start BGPD and enable at boot
+  service: name=bgpd
+           enabled=yes
+           state=started

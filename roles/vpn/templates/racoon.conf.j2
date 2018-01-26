@@ -1,0 +1,22 @@
+path pre_shared_key "/etc/racoon/psk.txt";
+  
+remote {{ vgw_public_ip }} {
+    my_identifier address {{ cgw_public_ip }};
+    exchange_mode main;
+    lifetime time 28800 seconds;
+    proposal {
+        encryption_algorithm aes128;
+        hash_algorithm sha1;
+        authentication_method pre_shared_key;
+        dh_group 2;
+    }
+    generate_policy off;
+}
+  
+sainfo anonymous {
+    pfs_group 2;
+    lifetime time 3600 seconds;
+    encryption_algorithm aes128;
+    authentication_algorithm hmac_sha1;
+    compression_algorithm deflate;
+}
