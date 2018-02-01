@@ -31,6 +31,7 @@
 - name: setup ip rules
   shell: ip xfrm policy add src 0.0.0.0/0 dst 0.0.0.0/0 dir out mark 12 tmpl src {{ vgw_public_ip }} dst {{ cgw_private_ip }} proto esp mode tunnel
 
+- shell: ip xfrm policy add src 0.0.0.0/0 dst 0.0.0.0/0 dir out mark 12 tmpl src {{ cgw_private_ip }} dst {{ vgw_public_ip }} proto esp mode tunnel
 - shell: ip link add name tun0 type vti local {{ cgw_private_ip }} remote {{ vgw_public_ip }} key 12
 - shell: ip link set dev tun0 up
 - shell: ip link set dev tun0 mtu 1436

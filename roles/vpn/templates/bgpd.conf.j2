@@ -1,6 +1,8 @@
 router bgp 65000
 bgp router-id {{ cgw_public_ip }}
-network {{ cgw_private_ip }}/32
+network 10.0.0.0/16
+# network should be VPC CIDR
+# network {{ cgw_private_ip }}/32
 neighbor {{ inside_tunnel_vgw_ip }} remote-as 50624
 neighbor {{ inside_tunnel_vgw_ip }} maximum-prefix 1000
 line vty
