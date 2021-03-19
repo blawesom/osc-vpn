@@ -6,7 +6,7 @@ cryptography==2.8
 enum34==1.1.6
 idna==2.8
 ipaddress==1.0.23
-Jinja2==2.10.3
+Jinja2==2.11.3
 lxml==4.4.2
 MarkupSafe==1.1.1
 paramiko==2.7.1
